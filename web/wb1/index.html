@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/axios/dist/axios.standalone.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/CryptoJS/rollups/hmac-sha256.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/CryptoJS/rollups/sha256.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/CryptoJS/components/hmac.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/CryptoJS/components/enc-base64.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/url-template/url-template.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/apiGatewayCore/sigV4Client.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/apiGatewayCore/apiGatewayClient.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
+<script type="text/javascript"
+    src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/lib/apiGatewayCore/utils.js"></script>
+<script type="text/javascript" src="build1/javascript_2019-11-14_21-50Z/apiGateway-js-sdk/apigClient.js"></script>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
+<b>Confirm the incoming visitor is authentic</b><br><br>
+
+<body>
+    <img class="visitorAvatar" id="imageid" src="" width="200" height="200">
+    <div class="GrantingDiv" id="GrantingDiv">
+        <button class="allowButton" id="allowButton">
+            Allow
+        </button>
+        <button class="denyButton" id="denyButton">
+            Deny
+        </button>
+    </div>
+    <div class="InputInfoDiv" id="InputInfoDiv" style="display:none">
+        <form>
+            <input type="hidden" class="visitorId" id="visitorId" value="">
+            <input type="text" id="visitor-name" class="visitor-name" placeholder="Enter Visitor's Name">
+            <input type="text" id="visitor-email" class="visitor-email" placeholder="Enter Visitor's Email Address">
+            <input type="submit" class="visitorInfoInput" value="Submit">
+        </form>
+    </div>
+    <div class="SubmitInfoSuccessHint" id="SubmitInfoSuccessHint" style="display: none">
+        <text>Successfully authenticate visitor, sent one-time password to visitor</text>
+    </div>
+    <div class="DenyInfoHint" id="DenyInfoHint" style="display: none">
+        <text>Successfully deny the visitor</text>
+    </div>
+</body>
+
+
+<script>
+    $("#InputInfoDiv").on("submit", function (e) {
+        e.preventDefault();
+        var name = $("#visitor-name").val();
+        var email = $("#visitor-email").val();
+        var id = $("#visitorId").val();
+
+        var params = {};
+        var body = {
+            "name": name,
+            "email": email,
+            "id": id
+        };
+        var additionalParams = {
+
+        };
+
+        apigClient.ownerSubmitInfoPost(params, body, additionalParams)
+            .then((result) => {
+                if (result.status == 200) {
+                    document.getElementById("SubmitInfoSuccessHint").style.display = "block";
+                    document.getElementById("InputInfoDiv").style.display = "none";
+                }
+            });
+    });
+
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var faceId1 = urlParams.get('faceId');
+
+    document.getElementById("allowButton").addEventListener('click', function () {
+        document.getElementById("GrantingDiv").style.display = "none";
+        document.getElementById("InputInfoDiv").style.display = "block";
+    });
+
+    document.getElementById("DenyInfoHint").addEventListener('click', function () {
+        var param = {
+            "userFaceId": faceId1
+        };
+        apigClient.ownerDenyVisitorGet(param)
+            .then((result) => {
+                document.getElementById("GrantingDiv").style.display = "none";
+                document.getElementById("DenyInfoHint").style.display = "block";
+            });
+    });
+
+    document.getElementById("denyButton").addEventListener('click', function () {
+        var param = {
+            "userFaceId": faceId1
+        }
+        apigClient.ownerDenyVisitorUserfaceidGet(param)
+            .then((result) => {
+                console.log(result);
+            });
+    });
+
+    var apigClient = null;
+    apigClient = apigClientFactory.newClient();
+    // var successHint = $("#successHint");
+    // successHint.hide();
+    AWS.config.region = 'us-east-1';
+
+    var params = {
+        "userFaceId": faceId1.toString()
+    };
+    var a = apigClient.ownerGetVisitorUserfaceidGet(params)
+        .then((result) => {
+            console.log(result.data["Pic_Url"]["S"]);
+            document.getElementById("imageid").src = result.data["Pic_Url"]["S"];
+            document.getElementById("visitorId").value = faceId1;
+            console.log(result.data);
+        });
+
+
+
+
+
+
+
+</script>
+
+
+
+
+</html>
